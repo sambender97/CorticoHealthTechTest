@@ -1,12 +1,25 @@
-include:
-   - infra.yaml
+version: '3'
+
 services:
   web:
     build: .
     ports:
       - "8000:5000"
-    develop:
-      watch:
-        - action: sync
-          path: .
-          target: /code
+  redis:
+    image: "redis:alpine"
+  monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "monitor.py"]
+    env_file:
+      - .env  # Load environment variables from the .env file
+
+  smtp:
+    image: namshi/smtp
+    environment:
+      - MAILNAME=localhost
+      - RELAY_NETWORKS=:0.0.0.0/0
+      - PORT=25
+    ports:
+      - "25:25"
